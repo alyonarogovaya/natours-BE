@@ -1,5 +1,6 @@
 const express = require('express');
 const morgan = require('morgan');
+const qs = require('qs');
 
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
@@ -21,6 +22,7 @@ app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
   next();
 });
+app.set('query parser', (str) => qs.parse(str));
 
 app.use(`${ROOT_URL}/tours`, tourRouter);
 app.use(`${ROOT_URL}/users`, userRouter);
