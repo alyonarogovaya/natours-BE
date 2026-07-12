@@ -4,6 +4,8 @@ const qs = require('qs');
 
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
+const AppError = require('./utils/appError');
+const globalErrorHandler = require('./controllers/errorController');
 
 const app = express();
 const ROOT_URL = '/api/v1';
@@ -22,5 +24,11 @@ app.set('query parser', (str) => qs.parse(str));
 
 app.use(`${ROOT_URL}/tours`, tourRouter);
 app.use(`${ROOT_URL}/users`, userRouter);
+
+app.use((req, res, next) => {
+  next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));
+});
+
+app.use(globalErrorHandler);
 
 module.exports = app;
