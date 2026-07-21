@@ -1,26 +1,58 @@
 const express = require('express');
 const morgan = require('morgan');
-const qs = require('qs');
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
+const validator = require('validator');
+const hpp = require('hpp');
 
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
+const { sanitizeNoSQL, sanitizeStrings } = require('./utils/sanitize');
 
 const app = express();
 const ROOT_URL = '/api/v1';
 
+app.use(helmet());
+
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
-app.use(express.json());
-app.use(express.static(`${__dirname}/public`));
+
+const limiter = rateLimit({
+  max: 100,
+  windowMs: 60 * 60 * 1000,
+  message: 'Too many requests from this IP, please try again in an hour!',
+});
+app.use('/api', limiter);
+
+app.use(express.json({ limit: '10kb' }));
+
+app.use(
+  hpp({
+    whitelist: [
+      'duration',
+      'ratingsQuantity',
+      'ratingsAverage',
+      'maxGroupSize',
+      'difficulty',
+      'price',
+    ],
+  }),
+);
 
 app.use((req, res, next) => {
-  req.requestTime = new Date().toISOString();
+  sanitizeNoSQL(req.body);
+  sanitizeNoSQL(req.query);
+  sanitizeNoSQL(req.params);
+
+  sanitizeStrings(req.body);
+
   next();
 });
-app.set('query parser', (str) => qs.parse(str));
+
+app.use(express.static(`${__dirname}/public`));
 
 app.use(`${ROOT_URL}/tours`, tourRouter);
 app.use(`${ROOT_URL}/users`, userRouter);

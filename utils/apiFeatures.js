@@ -20,11 +20,18 @@ class APIFeatures {
 
   sort() {
     if (this.queryString.sort) {
-      const sortBy = this.queryString.sort.split(',').join(' ');
+      let sort = this.queryString.sort;
+
+      if (Array.isArray(sort)) {
+        sort = sort.join(',');
+      }
+
+      const sortBy = sort.split(',').join(' ');
       this.query = this.query.sort(sortBy);
     } else {
       this.query = this.query.sort('-createdAt _id');
     }
+
     return this;
   }
 
