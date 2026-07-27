@@ -2,11 +2,11 @@ const express = require('express');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
-const validator = require('validator');
 const hpp = require('hpp');
 
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
+const reviewRouter = require('./routes/reviewRoutes');
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
 const { sanitizeNoSQL, sanitizeStrings } = require('./utils/sanitize');
@@ -56,6 +56,7 @@ app.use(express.static(`${__dirname}/public`));
 
 app.use(`${ROOT_URL}/tours`, tourRouter);
 app.use(`${ROOT_URL}/users`, userRouter);
+app.use(`${ROOT_URL}/reviews`, reviewRouter);
 
 app.use((req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));

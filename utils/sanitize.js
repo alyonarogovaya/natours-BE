@@ -1,3 +1,5 @@
+const validator = require('validator');
+
 const sanitizeNoSQL = (obj) => {
   if (!obj || typeof obj !== 'object') return;
 
