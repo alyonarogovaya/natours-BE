@@ -14,6 +14,8 @@ exports.getAll = (Model) =>
       .sort()
       .limitFields()
       .paginate();
+
+    console.log(req.query);
     const documents = await features.query;
 
     res.status(200).json({

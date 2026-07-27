@@ -1,3 +1,5 @@
+const { parseQuery } = require('./parseQuery');
+
 class APIFeatures {
   constructor(query, queryString) {
     this.query = query;
@@ -5,16 +7,21 @@ class APIFeatures {
   }
 
   filter() {
-    const queryObj = { ...this.queryString };
+    let queryObj = parseQuery(this.queryString);
 
     const excludedFields = ['page', 'sort', 'limit', 'fields'];
     excludedFields.forEach((field) => delete queryObj[field]);
 
     let queryStr = JSON.stringify(queryObj);
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
-    const filter = JSON.parse(queryStr);
+
+    const filter = JSON.parse(queryStr, (key, value) => {
+      if (!isNaN(value)) return Number(value);
+      return value;
+    });
 
     this.query = this.query.find(filter);
+
     return this;
   }
 
