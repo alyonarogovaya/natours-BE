@@ -3,16 +3,23 @@ const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const hpp = require('hpp');
+const path = require('path');
 
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
+const viewRouter = require('./routes/viewRoutes');
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
 const { sanitizeNoSQL, sanitizeStrings } = require('./utils/sanitize');
 
 const app = express();
 const ROOT_URL = '/api/v1';
+
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(helmet());
 
@@ -52,8 +59,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.static(`${__dirname}/public`));
-
+app.use('/', viewRouter);
 app.use(`${ROOT_URL}/tours`, tourRouter);
 app.use(`${ROOT_URL}/users`, userRouter);
 app.use(`${ROOT_URL}/reviews`, reviewRouter);
