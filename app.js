@@ -15,13 +15,42 @@ const { sanitizeNoSQL, sanitizeStrings } = require('./utils/sanitize');
 
 const app = express();
 const ROOT_URL = '/api/v1';
+app.locals.mapboxToken = process.env.MAPBOX_TOKEN;
 
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(helmet());
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", 'https://api.mapbox.com'],
+      styleSrc: [
+        "'self'",
+        "'unsafe-inline'",
+        'https://api.mapbox.com',
+        'https://fonts.googleapis.com',
+      ],
+      fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
+      imgSrc: [
+        "'self'",
+        'data:',
+        'blob:',
+        'https://*.mapbox.com',
+        'https://*.mapbox.cn',
+      ],
+      connectSrc: [
+        "'self'",
+        'https://api.mapbox.com',
+        'https://*.tiles.mapbox.com',
+        'https://events.mapbox.com',
+      ],
+      workerSrc: ["'self'", 'blob:'],
+    },
+  }),
+);
 
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
