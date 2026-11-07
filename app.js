@@ -4,6 +4,7 @@ const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const hpp = require('hpp');
 const path = require('path');
+const cookieParser = require('cookie-parser');
 
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
@@ -26,7 +27,11 @@ app.use(
   helmet.contentSecurityPolicy({
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", 'https://api.mapbox.com'],
+      scriptSrc: [
+        "'self'",
+        'https://api.mapbox.com',
+        'https://cdnjs.cloudflare.com',
+      ],
       styleSrc: [
         "'self'",
         "'unsafe-inline'",
@@ -46,6 +51,7 @@ app.use(
         'https://api.mapbox.com',
         'https://*.tiles.mapbox.com',
         'https://events.mapbox.com',
+        'https://cdnjs.cloudflare.com',
       ],
       workerSrc: ["'self'", 'blob:'],
     },
@@ -64,6 +70,7 @@ const limiter = rateLimit({
 app.use('/api', limiter);
 
 app.use(express.json({ limit: '10kb' }));
+app.use(cookieParser());
 
 app.use(
   hpp({
@@ -85,6 +92,12 @@ app.use((req, res, next) => {
 
   sanitizeStrings(req.body);
 
+  next();
+});
+
+app.use((req, res, next) => {
+  req.requestTime = new Date().toISOString();
+  console.log(req.cookies);
   next();
 });
 
